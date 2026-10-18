@@ -2,11 +2,11 @@
 
 > **Plataforma multi-dispositivo para el control de suscripciones y gastos recurrentes, con alertas preventivas antes de cada cobro.**
 
-![Java](https://img.shields.io/badge/Java-17+-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?logo=springboot&logoColor=white)
+![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?logo=springboot&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=jetpackcompose&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Postman](https://img.shields.io/badge/Postman-Collection-FF6C37?logo=postman&logoColor=white)
 ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-85EA2D?logo=swagger&logoColor=black)
@@ -50,10 +50,10 @@
 
 | Componente | Tecnología | Repositorio |
 |---|---|---|
-| 🖥️ **Backend API REST** | Java 17+, Spring Boot, Spring Data JPA, Spring Security (JWT), OpenAPI | `subcancel-backend` |
+| 🖥️ **Backend API REST** | Java 25, Spring Boot 4.1.1, Spring Data JPA, Spring Security (JWT), OpenAPI | `subcancel-backend` |
 | 📱 **App Móvil** | Kotlin, Jetpack Compose, Retrofit, WorkManager | `subcancel-android` |
 | 🌐 **Cliente Web** | SPA con React (o HTML5 + JavaScript) | `subcancel-web` |
-| 🗄️ **Base de Datos** | PostgreSQL (alternativa: MySQL) | — |
+| 🗄️ **Base de Datos** | PostgreSQL 18 (alternativa: MySQL) | — |
 
 ### ✨ Funcionalidades principales
 
@@ -925,13 +925,17 @@ CREATE INDEX idx_categories_user           ON categories (user_id);
 ```text
 subcancel-backend/
 ├── 📄 pom.xml
-├── 📄 Dockerfile
+├── 📄 mvnw / mvnw.cmd
+├── 📄 Dockerfile                          # (pendiente)
 ├── 📄 docker-compose.yml
+├── 📄 .env.example                        # plantilla de variables de Docker
+├── 📄 .gitignore
+├── 📄 LICENSE
 ├── 📄 README.md
 └── 📁 src/
     ├── 📁 main/
     │   ├── 📁 java/com/subcancel/
-    │   │   ├── 📄 SubCancelApplication.java
+    │   │   ├── 📄 SubcancelbackendApplication.java
     │   │   │
     │   │   ├── 📁 config/
     │   │   │   ├── 📄 OpenApiConfig.java
@@ -993,7 +997,7 @@ subcancel-backend/
     │   │
     │   └── 📁 resources/
     │       ├── 📄 application.yml
-    │       ├── 📄 application-dev.yml
+    │       ├── 📄 application-dev.yml.example   # plantilla (el real no se versiona)
     │       └── 📁 db/migration/          # Flyway (opcional)
     │           └── 📄 V1__init_schema.sql
     │
@@ -1079,43 +1083,67 @@ subcancel-android/
 
 | Herramienta | Versión mínima | Verificación |
 |---|---|---|
-| ☕ **JDK** | 17 | `java -version` |
+| ☕ **JDK** | 25 | `java -version` |
 | 🐳 **Docker + Docker Compose** | 24.x / v2 | `docker --version` |
 | 🤖 **Android Studio** | Koala (2024.1) o superior | — |
 | 🟩 **Node.js** (cliente web) | 18 LTS | `node -v` |
 | 🔧 **Git** | 2.30 | `git --version` |
-| 📦 **Maven** (o wrapper `mvnw`) | 3.9 | `mvn -v` |
+| 📦 **Maven** | Incluido mediante el wrapper `mvnw` | `.\mvnw -version` |
 
 ### 1️⃣ Clonar los repositorios
 
 ```bash
-git clone https://github.com/<tu-usuario>/subcancel-backend.git
-git clone https://github.com/<tu-usuario>/subcancel-android.git
-git clone https://github.com/<tu-usuario>/subcancel-web.git
+git clone https://github.com/GarridoPau07/subcancel-backend.git
+git clone https://github.com/GarridoPau07/subcancel-android.git
+git clone https://github.com/GarridoPau07/subcancel-web.git
 ```
 
-### 2️⃣ Levantar la base de datos con Docker
+### 2️⃣ Configurar las variables de entorno
+
+Los archivos con credenciales reales **no se versionan**. El repositorio incluye plantillas que debes copiar y editar:
+
+```bash
+# Linux / macOS / Git Bash
+cp .env.example .env
+cp src/main/resources/application-dev.yml.example src/main/resources/application-dev.yml
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+Copy-Item src\main\resources\application-dev.yml.example src\main\resources\application-dev.yml
+```
+
+Edita ambos archivos con tus credenciales. **Deben coincidir entre sí**: el usuario, la contraseña y el nombre de la base de datos del `.env` son los que debe usar la URL de `application-dev.yml`.
+
+Archivo `.env.example`:
+
+```env
+POSTGRES_DB=subcancel_db
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+```
+
+### 3️⃣ Levantar la base de datos con Docker
 
 Archivo `docker-compose.yml` (en la raíz de `subcancel-backend`):
 
 ```yaml
-version: "3.9"
-
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: subcancel-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: subcancel
-      POSTGRES_USER: subcancel_user
-      POSTGRES_PASSWORD: subcancel_pass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
-      - subcancel_pgdata:/var/lib/postgresql/data
+      - subcancel_pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U subcancel_user -d subcancel"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -1125,21 +1153,40 @@ volumes:
 ```
 
 ```bash
-cd subcancel-backend
 docker compose up -d
 docker compose ps        # Verifica que el contenedor esté "healthy"
 ```
 
-### 3️⃣ Configurar y ejecutar el Backend
+> ⚠️ **PostgreSQL 18:** el volumen se monta en `/var/lib/postgresql` (no en `/var/lib/postgresql/data`, como en versiones anteriores).
+>
+> ⚠️ Las variables `POSTGRES_*` solo se aplican la **primera vez** que se crea el volumen. Si cambias usuario, contraseña o nombre de la base de datos, recrea el volumen con `docker compose down -v` (esto borra los datos).
 
-Archivo `src/main/resources/application-dev.yml`:
+Para comprobar la conexión:
+
+```bash
+docker exec -it subcancel-db psql -U <tu_usuario> -d subcancel_db
+```
+
+### 4️⃣ Configurar y ejecutar el Backend
+
+Archivo `src/main/resources/application.yml`:
+
+```yaml
+spring:
+  application:
+    name: subcancel-backend
+  profiles:
+    active: dev
+```
+
+Archivo `src/main/resources/application-dev.yml` (plantilla en `application-dev.yml.example`):
 
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/subcancel
-    username: subcancel_user
-    password: subcancel_pass
+    url: jdbc:postgresql://localhost:5432/subcancel_db
+    username: your_user
+    password: your_password
   jpa:
     hibernate:
       ddl-auto: update        # En producción usar "validate" + Flyway
@@ -1147,10 +1194,14 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+```
 
+Al implementar la autenticación JWT y Swagger se añadirá además esta configuración:
+
+```yaml
 app:
   jwt:
-    secret: ${JWT_SECRET:cambia-este-secreto-por-uno-de-minimo-32-caracteres}
+    secret: ${JWT_SECRET}
     access-expiration-ms: 900000        # 15 minutos
     refresh-expiration-ms: 604800000    # 7 días
 
@@ -1159,17 +1210,27 @@ springdoc:
     path: /swagger-ui.html
 ```
 
+Ejecución (con la base de datos de Docker levantada):
+
 ```bash
+# Linux / macOS / Git Bash
 export JWT_SECRET="un-secreto-largo-y-aleatorio-de-al-menos-32-caracteres"
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+./mvnw spring-boot:run
+```
+
+```powershell
+# Windows PowerShell
+$env:JWT_SECRET = "un-secreto-largo-y-aleatorio-de-al-menos-32-caracteres"
+.\mvnw spring-boot:run
 ```
 
 ✅ Verificación:
 
+- En el log aparece `The following 1 profile is active: "dev"` y `HikariPool-1 - Start completed`.
 - API disponible en 👉 `http://localhost:8080`
-- Swagger UI en 👉 `http://localhost:8080/swagger-ui.html`
+- Swagger UI en 👉 `http://localhost:8080/swagger-ui.html` *(disponible cuando se añada OpenAPI)*
 
-### 4️⃣ Ejecutar la App Android
+### 5️⃣ Ejecutar la App Android
 
 1. Abre **Android Studio** → `File > Open` → selecciona la carpeta `subcancel-android`.
 2. Espera a que finalice la sincronización de Gradle.
@@ -1188,7 +1249,7 @@ android {
 
 > ⚠️ **Dispositivo físico:** sustituye `10.0.2.2` por la IP local de tu equipo (ej. `192.168.1.50`) y asegúrate de estar en la misma red. Para tráfico HTTP en desarrollo, habilita `usesCleartextTraffic` solo en el build de *debug*.
 
-### 5️⃣ Ejecutar el Cliente Web *(opcional)*
+### 6️⃣ Ejecutar el Cliente Web *(opcional)*
 
 ```bash
 cd subcancel-web
